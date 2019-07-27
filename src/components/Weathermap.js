@@ -1,8 +1,8 @@
 import * as React from "react";
 import {Col, Card, CardBody} from 'reactstrap';
 
-
 import GoogleLayer from 'olgm/layer/Google.js';
+
 import {defaults} from 'olgm/interaction.js';
 import OLGoogleMaps from 'olgm/OLGoogleMaps.js';
 
@@ -22,6 +22,8 @@ import LayerSwitcher from "ol-layerswitcher/src/ol-layerswitcher.js";
 import Stamen from "ol/source/Stamen.js";
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
+import GeoJSON from 'ol/format/GeoJSON';
+// import OlGeoJSON from 'ol/format/geojson'
 import {Fill, Stroke, Style, Text} from 'ol/style.js';
 import BingMaps from 'ol/source/BingMaps.js';
 import $ from 'jquery';
@@ -77,16 +79,36 @@ class Weathermap extends React.Component {
         })
         this.ol3d.setEnabled(this.state.enable3D);
     }
-    switchdimension = () =>{
-      this.change2D3D();
-      this.changeButtonText();
-   }
+
+    switchdimension = () => {
+        this.change2D3D();
+        this.changeButtonText();
+    }
 
 
     componentDidMount() {
         // const googleLayer = new GoogleLayer();
         // const googlekey = 'AIzaSyBfK1IhKyYY0QI-xT9QBfY0ZMBtILj0k9g';
         const bingMapKey = 'AlLccSQ-txfa4gfzC0XxrNaFanQ_jpD0toWcG-VnLEEwF5M3_mCmg_TVrPADz_pe';
+        const style = new Style({
+        fill: new Fill({
+          color: 'rgba(255, 255, 255, 0.6)'
+        }),
+        stroke: new Stroke({
+          color: '#319FD3',
+          width: 1
+        }),
+        text: new Text({
+          font: '12px Calibri,sans-serif',
+          fill: new Fill({
+            color: '#000'
+          }),
+          stroke: new Stroke({
+            color: '#fff',
+            width: 3
+          })
+        })
+      });
         const {buttonText} = this.state;
         this.view = new View({
             center: getCenter(this.props.extent),
@@ -94,8 +116,7 @@ class Weathermap extends React.Component {
             zoom: this.props.zoomLevel
         });
         this.map = new Map({
-            controls:
-                defaultControls().extend([
+            controls: defaultControls().extend([
                 new LayerSwitcher({
                     tipLabel: 'Legend' // Optional label for button
                 })
@@ -131,6 +152,20 @@ class Weathermap extends React.Component {
                         imagerySet: 'AerialWithLabels',
                     })
                 }),
+                new VectorLayer({
+                    title: "GeoJson Layer",
+                    source: new VectorSource({
+                        url: 'https://openlayers.org/en/latest/examples/data/geojson/countries.geojson',
+                        format:new GeoJSON()
+                    })
+                    ,
+
+                    style: function(feature) {
+          style.getText().setText(feature.get('name'));
+          return style;
+        }
+                    //
+                })
 
             ],
             target: 'map',
@@ -217,8 +252,8 @@ class Weathermap extends React.Component {
             let country = parsed_data['sys']['country']
             for (let i in parsed_data) {
                 if (i === 'weather') {
-                    let tablerow = '<tr><td>Location</td><td>'+city_name+'</td></tr>' +
-                        '<tr><td>Country</td><td>'+country+'</td></tr><tr>' +
+                    let tablerow = '<tr><td>Location</td><td>' + city_name + '</td></tr>' +
+                        '<tr><td>Country</td><td>' + country + '</td></tr><tr>' +
                         '<td>Weather</td><td>' + parsed_data[i][0].description + '</td></tr>';
                     table = table + tablerow;
                 }
@@ -227,7 +262,7 @@ class Weathermap extends React.Component {
                     let tr = '<tr><td>Wind Speed</td><td>' + parsed_data[i].speed + ' m/s</td></tr>';
                     table = table + tr;
                 }
-                   else if (i === 'main') {
+                else if (i === 'main') {
                     for (let key in parsed_data[i]) {
                         let tablerow = '<tr><td>' + key + '</td>';
                         if (key.indexOf("temp") !== -1) {
@@ -260,18 +295,18 @@ class Weathermap extends React.Component {
                     <CardBody style={{padding: '0px'}}>
                         <div id="map" style={{width: "100%", height: "97%"}}>
 
-                        <button onClick={this.switchdimension}
-                                className={"btn btn-default col-md-12"}
-                                style={{
-                                    background: '#b3a5ff',
-                                    fontWeight: 'bold',
-                                    border: 'none',
-                                    float: 'center',
-                                }}
-                                value="3D"
-                        >
-                            {this.state.isToggleOn ? 'Enable 2D' : 'Enable 3D'}
-                        </button>
+                            <button onClick={this.switchdimension}
+                                    className={"btn btn-default col-md-12"}
+                                    style={{
+                                        background: '#b3a5ff',
+                                        fontWeight: 'bold',
+                                        border: 'none',
+                                        float: 'center',
+                                    }}
+                                    value="3D"
+                            >
+                                {this.state.isToggleOn ? 'Enable 2D' : 'Enable 3D'}
+                            </button>
 
 
                         </div>
