@@ -1,6 +1,7 @@
 import * as React from "react";
 import {Col, Card, CardBody} from 'reactstrap';
 
+// import pk from "pakistan.geojson";
 import GoogleLayer from 'olgm/layer/Google.js';
 
 import {defaults} from 'olgm/interaction.js';
